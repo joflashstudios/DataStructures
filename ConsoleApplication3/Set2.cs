@@ -36,27 +36,26 @@ namespace ConsoleApplication3
                 Count++;
                 return true;
             }
-            else
-            {
-                int collisions = 0;
-                do
-                {
-                    if (slot.hash == hash && comparer.Equals(slot.value, item))
-                    {
-                        return false;
-                    }
-                    slot = slot.next;
-                    collisions++;
-                } while (slot != null);
-                buckets[slotIndex] = new Slot { hash = hash, value = item, next = startSlot };
-                Count++;
 
-                if (collisions > 10)
+            int collisions = 0;
+            do
+            {
+                if (slot.hash == hash && comparer.Equals(slot.value, item))
                 {
-                    Expand();
+                    return false;
                 }
-                return true;
+                slot = slot.next;
+                collisions++;
+            } while (slot != null);
+
+            buckets[slotIndex] = new Slot { hash = hash, value = item, next = startSlot };
+            Count++;
+
+            if (collisions > 10)
+            {
+                Expand();
             }
+            return true;
         }
         
         public bool Contains(T item)
@@ -67,19 +66,17 @@ namespace ConsoleApplication3
             {
                 return false;
             }
-            else
-            {
-                do
-                {
-                    if (slot.hash == hash && comparer.Equals(slot.value, item))
-                    {
-                        return true;
-                    }
-                    slot = slot.next;
-                } while (slot != null);
 
-                return false;
-            }
+            do
+            {
+                if (slot.hash == hash && comparer.Equals(slot.value, item))
+                {
+                    return true;
+                }
+                slot = slot.next;
+            } while (slot != null);
+
+            return false;
         }
 
         public bool Remove(T item)
@@ -92,30 +89,28 @@ namespace ConsoleApplication3
             {
                 return false;
             }
+
+            while (slot.hash != hash || !comparer.Equals(slot.value, item))
+            {
+                lastSlot = slot;
+                slot = slot.next;
+                if (slot == null)
+                {
+                    return false;
+                }
+            }
+
+            if (lastSlot != null)
+            {
+                lastSlot.next = slot.next;
+            }
             else
             {
-                do
-                {
-                    if (slot.hash == hash && comparer.Equals(slot.value, item))
-                    {
-                        if (lastSlot != null)
-                        {
-                            lastSlot.next = slot.next;
-                        }
-                        else
-                        {
-                            buckets[hash % buckets.Length] = null;
-                        }
-                        Count--;
-                        return true;
-                    }
-                    
-                    lastSlot = slot;
-                    slot = slot.next;
-                } while (slot != null);
-
-                return false;
+                buckets[hash % buckets.Length] = null;
             }
+
+            Count--;
+            return true;
         }
 
         private void Expand()
