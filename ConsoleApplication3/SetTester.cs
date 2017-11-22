@@ -17,7 +17,7 @@ namespace ConsoleApplication3
 
             T lastSet = default(T);
             var initStart = DateTime.Now;
-            for(int i = 0; i < 1; i++)
+            for(int i = 0; i < 100; i++)
             {
                 lastSet = new T();
                 for(int x = 0; x < strings.Length; x++)
@@ -25,17 +25,17 @@ namespace ConsoleApplication3
                     lastSet.Add(strings[x]);
                 }
             }
-            Console.WriteLine($"Initilizing {testName} 1 times took {(DateTime.Now - initStart).TotalSeconds}");
+            Console.WriteLine($"Initilizing {testName} 100 times took {(DateTime.Now - initStart).TotalSeconds}");
 
             var containsStart = DateTime.Now;
-            for(int i = 0; i < 1; i++)
+            for(int i = 0; i < 100; i++)
             {
                 for (int x = 0; x < mixedMatches.Length; x++)
                 {
                     lastSet.Contains(mixedMatches[x]);
                 }
             }
-            Console.WriteLine($"Checking contents {testName} 1 times took {(DateTime.Now - containsStart).TotalSeconds}");
+            Console.WriteLine($"Checking contents {testName} 100 times took {(DateTime.Now - containsStart).TotalSeconds}");
 
             var removeStart = DateTime.Now;
             for (int i = 0; i < 1; i++)

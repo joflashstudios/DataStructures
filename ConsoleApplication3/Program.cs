@@ -10,9 +10,11 @@ namespace ConsoleApplication3
     {
         static void Main(string[] args)
         {
+            Console.WriteLine();
+
             SetTester.testSet<HashSet<string>>("Built-in hashset");
             SetTester.testSet<Set2<string>>("Set2");
-            SetTester.testSet<Set1<string>>("Set1");
+            //SetTester.testSet<Set1<string>>("Set1");
             Console.ReadKey();
         }
     }
