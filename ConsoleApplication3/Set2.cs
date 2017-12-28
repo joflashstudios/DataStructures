@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace ConsoleApplication3
 {
-    class Set2<T> : ISet<T>
+    internal class Set2<T> : ISet<T>
     {
-        Slot[] buckets = new Slot[3];
-        
-        EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+        private Slot[] _buckets = new Slot[3];
+
+        private readonly EqualityComparer<T> _comparer = EqualityComparer<T>.Default;
 
         public bool IsReadOnly => false;
         public int Count { get; private set; } = 0;
@@ -21,34 +21,34 @@ namespace ConsoleApplication3
             {
                 return 0;
             }
-            return comparer.GetHashCode(item) & 2147483647;
+            return _comparer.GetHashCode(item) & 2147483647;
         }
 
         public bool Add(T item)
         {
             var hash = InternalGetHashCode(item);
-            var slotIndex = hash % buckets.Length;
-            var startSlot = buckets[slotIndex];
+            var slotIndex = hash % _buckets.Length;
+            var startSlot = _buckets[slotIndex];
             var slot = startSlot;
             if (slot == null)
             {
-                buckets[slotIndex] = new Slot { hash = hash, value = item };
+                _buckets[slotIndex] = new Slot { Hash = hash, Value = item };
                 Count++;
                 return true;
             }
 
-            int collisions = 0;
+            var collisions = 0;
             do
             {
-                if (slot.hash == hash && comparer.Equals(slot.value, item))
+                if (slot.Hash == hash && _comparer.Equals(slot.Value, item))
                 {
                     return false;
                 }
-                slot = slot.next;
+                slot = slot.Next;
                 collisions++;
             } while (slot != null);
 
-            buckets[slotIndex] = new Slot { hash = hash, value = item, next = startSlot };
+            _buckets[slotIndex] = new Slot { Hash = hash, Value = item, Next = startSlot };
             Count++;
 
             if (collisions > 10)
@@ -61,7 +61,7 @@ namespace ConsoleApplication3
         public bool Contains(T item)
         {
             var hash = InternalGetHashCode(item);
-            var slot = buckets[hash % buckets.Length];
+            var slot = _buckets[hash % _buckets.Length];
             if (slot == null)
             {
                 return false;
@@ -69,11 +69,11 @@ namespace ConsoleApplication3
 
             do
             {
-                if (slot.hash == hash && comparer.Equals(slot.value, item))
+                if (slot.Hash == hash && _comparer.Equals(slot.Value, item))
                 {
                     return true;
                 }
-                slot = slot.next;
+                slot = slot.Next;
             } while (slot != null);
 
             return false;
@@ -82,7 +82,7 @@ namespace ConsoleApplication3
         public bool Remove(T item)
         {
             var hash = InternalGetHashCode(item);
-            var slot = buckets[hash % buckets.Length];
+            var slot = _buckets[hash % _buckets.Length];
 
             Slot lastSlot = null;
             if (slot == null)
@@ -90,10 +90,10 @@ namespace ConsoleApplication3
                 return false;
             }
 
-            while (slot.hash != hash || !comparer.Equals(slot.value, item))
+            while (slot.Hash != hash || !_comparer.Equals(slot.Value, item))
             {
                 lastSlot = slot;
-                slot = slot.next;
+                slot = slot.Next;
                 if (slot == null)
                 {
                     return false;
@@ -102,11 +102,11 @@ namespace ConsoleApplication3
 
             if (lastSlot != null)
             {
-                lastSlot.next = slot.next;
+                lastSlot.Next = slot.Next;
             }
             else
             {
-                buckets[hash % buckets.Length] = null;
+                _buckets[hash % _buckets.Length] = null;
             }
 
             Count--;
@@ -115,42 +115,42 @@ namespace ConsoleApplication3
 
         private void Expand()
         {
-            var newSize = primes.First(x => x > buckets.Length * 2);
+            var newSize = primes.First(x => x > _buckets.Length * 2);
             var newBuckets = new Slot[newSize];
-
-            for (int bucketIndex = 0; bucketIndex < buckets.Length;  bucketIndex++)
+            
+            for (var bucketIndex = 0; bucketIndex < _buckets.Length;  bucketIndex++)
             {
-                var slot = buckets[bucketIndex];
+                var slot = _buckets[bucketIndex];
                 while(slot != null)
                 {
-                    var next = slot.next;
+                    var next = slot.Next;
 
-                    var newIndex = slot.hash % newSize;
+                    var newIndex = slot.Hash % newSize;
                     if (newBuckets[newIndex] == null)
                     {
-                        slot.next = null;
+                        slot.Next = null;
                         newBuckets[newIndex] = slot;
                     }
                     else
                     {
-                        slot.next = newBuckets[newIndex];
+                        slot.Next = newBuckets[newIndex];
                         newBuckets[newIndex] = slot;
                     }
 
                     slot = next;
                 }
             }
-            buckets = newBuckets;
+            _buckets = newBuckets;
         }
-        
-        class Slot
+
+        private class Slot
         {
-            internal int hash;
-            internal T value;
-            internal Slot next;
+            internal int Hash;
+            internal T Value;
+            internal Slot Next;
             public override string ToString()
             {
-                return value.ToString();
+                return Value.ToString();
             }
         }
 
